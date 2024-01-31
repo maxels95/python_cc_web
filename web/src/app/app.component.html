@@ -227,6 +227,13 @@
       </svg>
       <h1>Hello, {{ title }}</h1>
       <p>Congratulations! Your app is running. 🎉</p>
+      <p>Here are the readings!. 🎉</p>
+      <div>
+        <h1>Reading List</h1>
+        <app-reading-list></app-reading-list>
+      </div>
+      
+      
     </div>
     <div class="divider" role="separator" aria-label="Divider"></div>
     <div class="right-side">
@@ -333,4 +340,6 @@
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 
 
-<router-outlet></router-outlet>
+<div>
+  <router-outlet></router-outlet>
+</div>
