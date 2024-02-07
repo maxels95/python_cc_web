@@ -5,4 +5,10 @@ const Sensors = {
     Soil_Humidity: 3
 }
 
-export {Sensors};
+const SensorNames = {};
+for (const name in Sensors) {
+    const value = Sensors[name];
+    SensorNames[value] = name;
+}
+
+export {Sensors, SensorNames};

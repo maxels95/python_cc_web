@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Chart from 'react-apexcharts';
-import Enums, { Sensors } from './Enums'
+import {Sensors} from './Enums';
+import getChart from './Chart';
 // import ApexCharts from 'apexcharts';
 
 const Reading = () => {
@@ -33,56 +34,34 @@ const Reading = () => {
   var waterLevels = []
   var soilHumitities = []
   readings.forEach(reading => {
-    switch (reading){
-      case reading.sensorID === Sensors.Temperature:
-        temperatures.push(reading)
-        break;
-      case reading.sensorID === Sensors.Humidity:
-        humidities.push(reading)
-        break;
-      case reading.sensorID === Sensors.Level:
-        waterLevels.push(reading)
-        break;
-      case reading.sensorID === Sensors.Soil_Humidity:
-        soilHumitities.push(reading)
-        break;
-      default:
+    if (reading.sensorID === Sensors.Temperature) {
+      temperatures.push(reading);
+    } else if (reading.sensorID === Sensors.Humidity) {
+        humidities.push(reading);
+    } else if (reading.sensorID === Sensors.Level) {
+        waterLevels.push(reading);
+    } else if (reading.sensorID === Sensors.Soil_Humidity) {
+      soilHumitities.push(reading);
+    } else {
+        // Handle the default case if needed
     }
       
   }) 
 
-  var dataPoints = [];
-  var timeStamps = [];
-  for (let i = 0; i < readings.length; i++) {
-    const reading = readings[i];
-    dataPoints.push(reading.value);
-    timeStamps.push(new Date(reading.dateTime).getTime());
-  }
 
-const options = {
-  chart: {
-    type: 'line',
-  },
-  series: [
-    {
-      data: dataPoints,
-    },
-  ],
-  xaxis: {
-    type: 'time',
-    categories: timeStamps,
-    tickAmount: 2,  // Specify x-axis type as datetime if using timestamps
-  },
-  stroke: {
-    curve: 'smooth',
-  }
-};
+const tempOptions = getChart(temperatures, Sensors.Temperature)
+const humidityOptions = getChart(humidities, Sensors.Humidity)
+const levelOptions = getChart(waterLevels, Sensors.Level)
+const soilHumititiesOptions = getChart(soilHumitities, Sensors.Soil_Humidity)
 
   return (
     <div>
       <h2>Readings</h2>
       <div id="chart">
-        <Chart options={options} series={options.series} type="line" height={350} />
+        <Chart options={tempOptions} series={tempOptions.series} type="line" height={350} />
+        <Chart options={humidityOptions} series={humidityOptions.series} type="line" height={350} />
+        <Chart options={levelOptions} series={levelOptions.series} type="line" height={350} />
+        <Chart options={soilHumititiesOptions} series={soilHumititiesOptions.series} type="line" height={350} />
       </div>
     </div>
   );
