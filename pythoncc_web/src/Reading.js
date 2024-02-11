@@ -1,32 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import Chart from 'react-apexcharts';
-import {Sensors} from './Enums';
+import {Sensors, SensorNames} from './Enums';
 import getChart from './Chart';
-// import ApexCharts from 'apexcharts';
+import { fetchSensors, fetchReadings, updateRelayManualState } from './Api'
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const Reading = () => {
   const [readings, setReadings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [sensors, setSensors] = useState([]);
+  // const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchReadings = async () => {
+    const getData = async () => {
       try {
-        const response = await fetch('http://localhost:5262/PythonEnclosure');
-        const data = await response.json();
-        setReadings(data);
-        setLoading(false);
+        const readingData = await fetchReadings();
+        const sensorData = await fetchSensors();
+        setReadings(readingData);
+        setSensors(sensorData);
       } catch (error) {
-        console.error('Error fetching readings:', error);
-        setLoading(false);
+        console.error('Error:', error.message)
       }
-    };
-
-    fetchReadings();
+    }
+    getData();
   }, []);
 
-  if (loading) {
-    return <p>Loading...</p>;
-  }
+  // if (loading) {
+  //   return <p>Loading...</p>;
+  // }
 
   // Sort readings by sensor parent
   var temperatures = []
@@ -54,15 +55,72 @@ const humidityOptions = getChart(humidities, Sensors.Humidity)
 const levelOptions = getChart(waterLevels, Sensors.Level)
 const soilHumititiesOptions = getChart(soilHumitities, Sensors.Soil_Humidity)
 
+
+const handleClick = async (sensorID, newRelayState, controlMode) => {
+  try {
+    const response = await updateRelayManualState(sensorID, newRelayState, controlMode);
+    console.log('API response:', response);
+    // Handle the successful response here
+  } catch (error) {
+    // Handle errors here
+  }
+};
+
+// create responsive box for displaying a chart
+const ReadingBox = ({ sensorID, chartOptions }) => {
+  const on = 1;
+  const off = 0;
+  const autoOn = 1;
+  const autoOff = 0;
+
+  return (
+    <div className="col-md-6 col-sm-12">
+      <div className="custom-box">
+        <h4>{SensorNames[sensorID]}</h4>
+        <Chart options={chartOptions} series={chartOptions.series} type="line" height={300} />
+        <div className="row mt-3">
+          <div className="col">
+            <button className="btn btn-primary" onClick={() => handleClick(sensorID, on, autoOff)}>On</button>
+          </div>
+          <div className="col">
+            <button className="btn btn-secondary" onClick={() => handleClick(sensorID, off, autoOff)}>Off</button>
+          </div>
+          <div className="col">
+            <button className="btn btn-success" onClick={() => handleClick(sensorID, off, autoOn)}>Auto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
   return (
     <div>
       <h2>Readings</h2>
       <div id="chart">
-        <Chart options={tempOptions} series={tempOptions.series} type="line" height={350} />
-        <Chart options={humidityOptions} series={humidityOptions.series} type="line" height={350} />
-        <Chart options={levelOptions} series={levelOptions.series} type="line" height={350} />
-        <Chart options={soilHumititiesOptions} series={soilHumititiesOptions.series} type="line" height={350} />
+      <div className="container-fluid">
+      <div className="row">
+        <ReadingBox sensorID={Sensors.Temperature} chartOptions={tempOptions} />
+        <ReadingBox sensorID={Sensors.Humidity} chartOptions={humidityOptions} />
+        <ReadingBox sensorID={Sensors.Level} chartOptions={levelOptions} />
+        <ReadingBox sensorID={Sensors.Soil_Humidity} chartOptions={soilHumititiesOptions} />
       </div>
+      <ul>
+        {sensors.map((sensor, index) => (
+          <li key={index}>
+            <strong>Sensor {index + 1}:</strong>
+            <ul>
+              <li>Control Mode: {sensor.controlMode}</li>
+              <li>Relay Manual State: {sensor.relayManualState}</li>
+              <li>Sensor Pin: {sensor.sensorPin}</li>
+              <li>Sensor Relay: {sensor.sensorRelay}</li>
+              <li>Sensor Type: {sensor.sensorType}</li>
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
+    </div>
     </div>
   );
 };
